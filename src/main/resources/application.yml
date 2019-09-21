@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    username: simba
+    password: BeGYVXnw7&Kj@A!j
+    url: jdbc:mysql://192.168.0.221:3306/lr-project?useUnicode=true
+    driver-class-name: com.mysql.jdbc.Driver
+  jackson:
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+nodes.zk: 192.168.2.9:2181,192.168.2.9:2182,192.168.2.9:2183
+
+cache.nodes: 192.168.2.9:5050,192.168.2.9:5051,192.168.2.9:5052,192.168.2.9:5053,192.168.2.9:5054,192.168.2.9:5055
+cache.password:
+mybatis:
+  mapper-locations: classpath:mapper/*.xml

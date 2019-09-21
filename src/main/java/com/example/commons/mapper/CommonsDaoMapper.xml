@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.commons.dao.CommonsDao">
+
+    <select id="selectById" resultType="java.util.HashMap">
+        select
+        <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+            ${filed.columnName} ${filed.attributeName}
+        </foreach>
+        from ${param1.tableName}
+        where id = #{id}
+    </select>
+
+    <select id="selectByWhereString" resultType="java.util.HashMap">
+        select
+        <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+            ${filed.columnName} ${filed.attributeName}
+        </foreach>
+        from ${param1.tableName}
+        <if test="param2 != null and param2 != ''">
+             where ${param2}
+        </if>
+    </select>
+
+    <select id="selectByCondition" resultType="java.util.HashMap">
+        select
+        <choose>
+            <when test="param2 == null">
+                <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+                    ${filed.columnName} ${filed.attributeName}
+                </foreach>
+            </when>
+            <otherwise>
+                ${param2.queryFields}
+            </otherwise>
+        </choose>
+        from ${param1.tableName}
+        <if test="param2 != null and param2.toString() != ''">
+           ${param2}
+        </if>
+    </select>
+
+
+    <select id="selectCountCondition" resultType="java.lang.Integer">
+        select count(*) cnt
+        from ${param1.tableName}
+        <if test="param2 != null and param2.toString() != ''">
+            ${param2}
+        </if>
+    </select>
+
+    <select id="selectCountWhereString" resultType="java.lang.Integer">
+        select count(*) cnt
+        from ${param1.tableName}
+        <if test="param2 != null and param2 != ''">
+            ${param2}
+        </if>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="param2.id">
+        INSERT INTO ${param1.tableName} (
+            <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+                ${filed.columnName}
+            </foreach>
+        )
+        VALUES (
+            <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+                #{param2.${filed.attributeName}}
+            </foreach>
+        )
+    </insert>
+
+    <insert id="insertList" useGeneratedKeys="true">
+        INSERT INTO ${param1.tableName} (
+        <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+            ${filed.columnName}
+        </foreach>
+        )
+        VALUES
+        <foreach collection="param2" item="dataItem" index="index" separator=",">
+            (
+            <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+                #{dataItem.${filed.attributeName}}
+            </foreach>
+            )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        update ${param1.tableName} set
+        <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+            <choose>
+            <when test="filed.columnName == 'version'">
+                version = version + 1
+            </when>
+            <otherwise>
+                ${filed.columnName} = #{param2.${filed.attributeName}}
+            </otherwise>
+            </choose>
+        </foreach>
+        WHERE id = #{param2.id} AND version = #{param2.version}
+    </update>
+
+    <!-- 更新时于修订记录会产生数据不一致，暂时不用 -->
+    <update id="updateExcludeNull">
+        update ${param1.tableName} set
+        <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+            <choose>
+                <when test="filed.columnName == 'version'">
+                    version = version + 1
+                </when>
+                <when test="param1.getOgnlValue(filed.attributeName,param2)== null">
+                    <!-- ${filed.columnName} = ${filed.columnName} -->
+                </when>
+                <otherwise>
+                    ${filed.columnName} = #{param2.${filed.attributeName}}
+                </otherwise>
+            </choose>
+        </foreach>
+        WHERE id = #{param2.id}
+        <if test="param2.version != null">
+          AND version = #{param2.version}
+        </if>
+    </update>
+
+    <!-- 更新时于修订记录会产生数据不一致-->
+    <update id="updateExcludeNullWhere">
+        update ${param1.tableName} set
+        <foreach collection="param1.sqlColumns" item="filed" index="index" separator=",">
+            <choose>
+                <when test="filed.columnName == 'version'">
+                    version = version + 1
+                </when>
+                <when test="param1.getOgnlValue(filed.attributeName,param2)== null">
+                    <!-- ${filed.columnName} = ${filed.columnName} -->
+                </when>
+                <otherwise>
+                    ${filed.columnName} = #{param2.${filed.attributeName}}
+                </otherwise>
+            </choose>
+        </foreach>
+        <if test="param3 != null and param3.toString() != ''">
+            ${param3}
+        </if>
+    </update>
+
+    <delete id="delete">
+        delete from ${param1.tableName} WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByCondition">
+        delete from ${param1.tableName} ${param2}
+    </delete>
+
+    <delete id="deleteByWhereString">
+        delete from ${param1.tableName} ${param2}
+    </delete>
+
+<!--    <select id="listBaseEntity" resultType="java.util.Map">-->
+<!--        SELECT a.*-->
+<!--        FROM (<include refid="cn.com.fero.component.dao.BaseEntityDao.from_base_java_simple"/>) a-->
+<!--        WHERE 1 <include refid="cn.com.fero.component.dao.BaseEntityDao.where_base_java_simple"/>-->
+<!--        <include refid="cn.com.fero.component.dao.BaseEntityDao.orderBy_java"/>-->
+<!--    </select>-->
+<!--    <select id="oneBaseEntity" resultType="java.util.Map">-->
+<!--        SELECT a.*-->
+<!--        FROM (<include refid="cn.com.fero.component.dao.BaseEntityDao.from_base_java_simple"/>) a-->
+<!--        WHERE 1 <include refid="cn.com.fero.component.dao.BaseEntityDao.where_base_java_simple"/>-->
+<!--        <include refid="cn.com.fero.component.dao.BaseEntityDao.orderBy_java"/>-->
+<!--    </select>-->
+
+</mapper>
